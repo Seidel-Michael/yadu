@@ -1,33 +1,61 @@
-
-import chai, { expect } from 'chai';
+import chai, {expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import sinon from 'sinon';
-import sinonMongoose from 'sinon-mongoose';
-import User, { IUser } from '../db/models/user';
-import { UserController } from './user-controller';
+import User, {UserModel} from '../db/models/user';
+import {UserController} from './user-controller';
+import * as dbHandler from '../../test-helper/db-handler';
 
 chai.use(chaiAsPromised);
 
 describe('UserController', () => {
-    
-    describe('getUsers', () => {
+  /**
+   * Connect to a new in-memory database before running any tests.
+   */
+  before(async () => await dbHandler.connect());
 
-        it('should return users with passwords set to null');
+  /**
+   * Clear all test data after every test.
+   */
+  afterEach(async () => await dbHandler.clearDatabase());
 
-        it('should return users', async () => {
-            const controller = new UserController();
-            const UserMock = sinon.mock(User);
+  /**
+   * Remove and close the db and server.
+   */
+  after(async () => await dbHandler.closeDatabase());
 
-            UserMock.expects('find').resolves([{ username: 'Klaus', password: 'hash1', groups: ['groupA', 'groupB'] }, { username: 'Heinz', password: 'hash2', groups: ['groupA', 'groupC'] }] as IUser[]);
+  describe('getUsers', () => {
+    it('should return users with passwords set to null');
 
-            const result: IUser[] =  await controller.getUsers();
+    it('should return users', async () => {
+      await (
+        await User.create({
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      await (
+        await User.create({
+          username: 'Karl',
+          password: 'hash2',
+          groups: ['groupA', 'groupC'],
+        })
+      ).save();
+      const controller = new UserController();
 
-            console.log(result);
-        });
+      const result: UserModel[] = await controller.getUsers();
 
-        it('should return empty array if no user was found');
-
-        it('should reject with DBError if something went wrong');
+      expect(result[0]).to.deep.include({
+        username: 'Heinz',
+        groups: ['groupA'],
+      });
+      expect(result[1]).to.deep.include({
+        username: 'Karl',
+        groups: ['groupA', 'groupC'],
+      });
     });
 
+    it('should return empty array if no user was found');
+
+    it('should reject with DBError if something went wrong');
+  });
 });

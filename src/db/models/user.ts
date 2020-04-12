@@ -1,16 +1,12 @@
 import mongoose, {Schema, Document} from 'mongoose';
 
-export interface IUser
-{
-  username: String,
-  password: String | null,
-  groups: String[]
+export interface UserModel {
+  username: string;
+  password: string | null;
+  groups: string[];
 }
 
-export interface IUserModel extends Document, IUser
-{
-
-}
+export interface UserSchema extends Document, UserModel {}
 
 const UserSchema: Schema = new Schema({
   username: {type: String, required: true, unique: true},
@@ -18,4 +14,4 @@ const UserSchema: Schema = new Schema({
   groups: {type: [String], required: true},
 });
 
-export default mongoose.model<IUserModel>('User', UserSchema);
+export default mongoose.model<UserSchema>('User', UserSchema);

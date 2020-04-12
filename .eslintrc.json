@@ -1,3 +1,26 @@
 {
-  "extends": "./node_modules/gts/"
+  "extends": "./node_modules/gts/",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 6
+  },
+  "env": {
+    "mocha": true
+  },
+  "overrides": [{
+    "files": "**/*.spec.ts",
+    "rules": {
+        "node/no-unpublished-require": 0,
+        "node/no-unpublished-import": 0,
+        "node/no-missing-require": 0
+    }
+  },
+  {
+    "files": "test-helper/**",
+    "rules": {
+        "node/no-unpublished-require": 0,
+        "node/no-unpublished-import": 0,
+        "node/no-missing-require": 0
+    }
+  }]
 }

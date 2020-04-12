@@ -1,15 +1,10 @@
-import mongoose from 'mongoose';
-import { IUser } from '../db/models/user'
+import User, {UserModel} from '../db/models/user';
 
-export class UserController
-{
-    UserController(db: typeof mongoose)
-    {
-        
-    }
+export class UserController {
+  constructor() {}
 
-    async getUsers(): Promise<IUser[]>
-    {
-        throw new Error('Not implemented!');
-    }
+  async getUsers(): Promise<UserModel[]> {
+    const user = await User.find();
+    return user;
+  }
 }
