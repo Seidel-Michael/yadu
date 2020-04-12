@@ -1,0 +1,52 @@
+{
+  "name": "yadu",
+  "version": "0.0.0",
+  "description": "Yet another databse ui",
+  "main": "index.js",
+  "scripts": {
+    "test": "nyc mocha",
+    "check": "gts check",
+    "clean": "gts clean",
+    "compile": "tsc",
+    "fix": "gts fix",
+    "prepare": "npm run compile",
+    "pretest": "npm run compile",
+    "posttest": "npm run check"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Seidel-Michael/yadu.git"
+  },
+  "author": "Michael Seidel & Fabian Beyerlein",
+  "license": "AGPL-3.0-only",
+  "bugs": {
+    "url": "https://github.com/Seidel-Michael/yadu/issues"
+  },
+  "homepage": "https://github.com/Seidel-Michael/yadu#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^8.3.5",
+    "@commitlint/config-conventional": "^8.3.4",
+    "@types/node": "^10.0.3",
+    "chai": "^4.2.0",
+    "gts": "^2.0.0",
+    "husky": "^4.2.5",
+    "mocha": "^7.1.1",
+    "nyc": "^15.0.1",
+    "source-map-support": "^0.5.16",
+    "ts-node": "^8.8.2",
+    "typescript": "~3.8.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  },
+  "mocha": {
+    "require": [
+      "ts-node/register",
+      "source-map-support/register"
+    ],
+    "recursive": true,
+    "spec": "src/**/*.spec.ts"
+  }
+}
