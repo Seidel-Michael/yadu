@@ -4,6 +4,7 @@
   "description": "Yet another databse ui",
   "main": "index.js",
   "scripts": {
+    "start": "npm run compile && node build/src/index.js",
     "test": "nyc mocha",
     "check": "gts check",
     "clean": "gts clean",
@@ -32,6 +33,7 @@
     "@types/mongodb-memory-server": "^2.3.0",
     "@types/mongoose": "^5.7.10",
     "@types/node": "^10.0.3",
+    "@types/shortid": "0.0.29",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "gts": "^2.0.0",
@@ -57,6 +59,7 @@
     "spec": "src/**/*.spec.ts"
   },
   "dependencies": {
-    "mongoose": "^5.9.7"
+    "mongoose": "^5.9.7",
+    "shortid": "^2.2.15"
   }
 }

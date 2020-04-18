@@ -23,9 +23,7 @@ describe('UserController', () => {
   after(async () => await dbHandler.closeDatabase());
 
   describe('getUsers', () => {
-    it('should return users with passwords set to null');
-
-    it('should return users', async () => {
+    it('should return all users', async () => {
       await (
         await User.create({
           username: 'Heinz',
@@ -44,6 +42,7 @@ describe('UserController', () => {
 
       const result: UserModel[] = await controller.getUsers();
 
+      expect(result.length).to.equal(2);
       expect(result[0]).to.deep.include({
         username: 'Heinz',
         groups: ['groupA'],
@@ -54,8 +53,15 @@ describe('UserController', () => {
       });
     });
 
-    it('should return empty array if no user was found');
+    it('should return empty array if no user was found', async () => {
+      const controller = new UserController();
 
+      const result: UserModel[] = await controller.getUsers();
+
+      expect(result.length).to.equal(0);
+    });
+
+    // Mongoose throws MongoError
     it('should reject with DBError if something went wrong');
   });
 });
