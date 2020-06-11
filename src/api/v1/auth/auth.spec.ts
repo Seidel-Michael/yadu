@@ -161,6 +161,25 @@ describe(`${PATH}`, () => {
         });
     });
 
+    it('should return 500 when other error occurrs', done => {
+      argonVerifyStub.resolves(true);
+      const error = new Error('SomeError');
+      getUserByNameStub.rejects(error);
+
+      request
+        .post(`${PATH}/login`)
+        .send({username: 'admin', password: 'admin'})
+        .end((error, response) => {
+          if (error) {
+            return done(error);
+          }
+
+          expect(response.status).to.equal(500);
+          expect(response.header['set-cookie']).to.be.undefined;
+          done();
+        });
+    });
+
     it('should return 401 when user not found', done => {
       argonVerifyStub.resolves(true);
       const error = new Error('UserNotFound');

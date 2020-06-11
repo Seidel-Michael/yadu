@@ -15,8 +15,13 @@ export class AuthRouteHandler {
       } else {
         if (error.message.startsWith('DbError')) {
           ctx.status = 503;
-        } else {
+        } else if (
+          error.message.startsWith('UserNotFound') ||
+          error.message.startsWith('Unauthorized')
+        ) {
           ctx.status = 401;
+        } else {
+          ctx.status = 500;
         }
 
         ctx.body = error;
