@@ -131,7 +131,7 @@ describe('UserController', () => {
     it('should return correct user', async () => {
       await (
         await User.create({
-          userid: 'a',
+          userId: 'a',
           username: 'Heinz',
           password: 'hash1',
           groups: ['groupA'],
@@ -139,7 +139,7 @@ describe('UserController', () => {
       ).save();
       await (
         await User.create({
-          userid: 'b',
+          userId: 'b',
           username: 'Karl',
           password: 'hash2',
           groups: ['groupA', 'groupC'],

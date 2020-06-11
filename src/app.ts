@@ -21,7 +21,7 @@ export class App {
 
     this.app.keys = [crypto.randomBytes(32).toString('hex')];
     this.app.use(
-      koaSession({key: 'etid:sess', httpOnly: true, signed: true}, this.app)
+      koaSession({key: 'yadu:session', httpOnly: true, signed: true}, this.app)
     );
 
     auth();
