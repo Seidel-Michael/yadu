@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import {UserController} from './controller/user-controller';
 import User from './db/models/user';
+import {App} from './app';
 
 mongoose
   .connect('mongodb://devuser:devuser@localhost:27017/yadu')
@@ -17,3 +18,5 @@ mongoose
     console.log(users[0].id);
   })
   .catch(error => console.error(error));
+
+const app = new App();
