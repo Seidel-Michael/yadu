@@ -1,6 +1,7 @@
 {
     "extends": "@istanbuljs/nyc-config-typescript",
     "include": ["src/**/*.ts"],
+    "exclude": ["docker-db/**/*", "src/**/*.spec.ts"],
     "reporter": ["text-summary", "html", "cobertura", "lcov"],
     "all": true
   }

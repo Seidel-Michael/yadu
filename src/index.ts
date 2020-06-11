@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
-import {UserController} from './controller/user-controller';
-import User from './db/models/user';
+/*import {UserController} from './controller/user-controller';
+import User from './db/models/user';*/
 import {App} from './app';
 
 mongoose
@@ -8,7 +8,7 @@ mongoose
   .then(async () => {
     console.log('Connected');
 
-    const app = new App();
+    new App();
 
     /*const userControler = new UserController();
     await User.create({
@@ -21,5 +21,3 @@ mongoose
     console.log(users);*/
   })
   .catch(error => console.error(error));
-
-

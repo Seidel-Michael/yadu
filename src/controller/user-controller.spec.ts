@@ -172,4 +172,110 @@ describe('UserController', () => {
       return expect(controller.getUserById('a')).to.be.rejectedWith('DBError');
     });
   });
+
+  describe('deleteUser', () => {
+    it('should remove user', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      await (
+        await User.create({
+          userId: 'b',
+          username: 'Karl',
+          password: 'hash2',
+          groups: ['groupA', 'groupC'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      await controller.deleteUser('a');
+
+      const result: UserModel[] = await controller.getUsers();
+
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.deep.include({
+        username: 'Karl',
+        groups: ['groupA', 'groupC'],
+      });
+    });
+
+    it('should throw UserNotFound Error', () => {
+      const controller = new UserController();
+      return expect(controller.deleteUser('a')).to.be.rejectedWith(
+        'UserNotFound'
+      );
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'deleteOne');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(controller.deleteUser('a')).to.be.rejectedWith('DBError');
+    });
+  });
+
+  describe('updateUser', () => {
+    it('should update user', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      await controller.updateUser({
+        userId: 'a',
+        username: 'Karl',
+        password: 'newPassword',
+        groups: ['groupA', 'groupB'],
+      });
+
+      const result: UserModel[] = await controller.getUsers();
+
+      expect(result.length).to.equal(1);
+      expect(result[0]).to.deep.include({
+        username: 'Karl',
+        password: 'newPassword',
+        groups: ['groupA', 'groupB'],
+      });
+    });
+
+    it('should throw UserNotFound Error', () => {
+      const controller = new UserController();
+      return expect(
+        controller.updateUser({
+          userId: 'a',
+          username: 'Karl',
+          password: 'newPassword',
+          groups: ['groupA', 'groupB'],
+        })
+      ).to.be.rejectedWith('UserNotFound');
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'updateOne');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(
+        controller.updateUser({
+          userId: 'a',
+          username: 'Karl',
+          password: 'newPassword',
+          groups: ['groupA', 'groupB'],
+        })
+      ).to.be.rejectedWith('DBError');
+    });
+  });
 });
