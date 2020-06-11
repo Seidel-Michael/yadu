@@ -14,6 +14,6 @@ mongoose
       groups: [],
     });
     const users = await userControler.getUsers();
-    console.log(users);
+    console.log(users[0].id);
   })
   .catch(error => console.error(error));
