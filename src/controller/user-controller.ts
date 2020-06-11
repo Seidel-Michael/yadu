@@ -26,10 +26,10 @@ export class UserController {
     return user;
   }
 
-  async getUserById(userid: string): Promise<UserModel> {
+  async getUserById(userId: string): Promise<UserModel> {
     let user;
     try {
-      user = await User.findOne({userid});
+      user = await User.findOne({userId});
     } catch (error) {
       throw new Error(`DBError: ${error.message}`);
     }

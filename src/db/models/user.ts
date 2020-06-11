@@ -2,16 +2,16 @@ import mongoose, {Schema, Document} from 'mongoose';
 import shortid from 'shortid';
 
 export interface UserModel {
-  userid?: string;
+  userId?: string;
   username: string;
-  password: string | null;
+  password: string;
   groups: string[];
 }
 
 export interface UserSchema extends Document, UserModel {}
 
 const UserSchema: Schema = new Schema({
-  userid: {type: String, unique: true, default: shortid.generate},
+  userId: {type: String, unique: true, default: shortid.generate},
   username: {type: String, required: true, unique: true},
   password: {type: String, required: true},
   groups: {type: [String], required: true},
