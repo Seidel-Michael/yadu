@@ -14,6 +14,14 @@ describe('UserController', () => {
    */
   before(async () => await dbHandler.connect());
 
+  let stub: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+  afterEach(() => {
+    if (stub !== null) {
+      stub.restore();
+    }
+  });
+
   /**
    * Clear all test data after every test.
    */
@@ -25,14 +33,6 @@ describe('UserController', () => {
   after(async () => await dbHandler.closeDatabase());
 
   describe('getUsers', () => {
-    let stub: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
-
-    afterEach(() => {
-      if (stub !== null) {
-        stub.restore();
-      }
-    });
-
     it('should return all users', async () => {
       await (
         await User.create({
@@ -71,15 +71,105 @@ describe('UserController', () => {
       expect(result.length).to.equal(0);
     });
 
-    // Mongoose throws MongoError
     it('should reject with DBError if something went wrong', () => {
       stub = sinon.stub(User, 'find');
-      const error = new MongoError('');
-      stub.throws(error);
+      stub.throws(new MongoError('SomeError'));
 
       const controller = new UserController();
 
-      return expect(controller.getUsers()).to.be.rejectedWith(error);
+      return expect(controller.getUsers()).to.be.rejectedWith('DBError');
+    });
+  });
+
+  describe('getUserByName', () => {
+    it('should return correct user', async () => {
+      await (
+        await User.create({
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      await (
+        await User.create({
+          username: 'Karl',
+          password: 'hash2',
+          groups: ['groupA', 'groupC'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      const result: UserModel = await controller.getUserByName('Karl');
+
+      expect(result).to.deep.include({
+        username: 'Karl',
+        password: 'hash2',
+        groups: ['groupA', 'groupC'],
+      });
+    });
+
+    it('should throw UserNotFound Error', () => {
+      const controller = new UserController();
+      return expect(controller.getUserByName('Karl')).to.be.rejectedWith(
+        'UserNotFound'
+      );
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'findOne');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(controller.getUserByName('Karl')).to.be.rejectedWith(
+        'DBError'
+      );
+    });
+  });
+
+  describe('getUserById', () => {
+    it('should return correct user', async () => {
+      await (
+        await User.create({
+          userid: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      await (
+        await User.create({
+          userid: 'b',
+          username: 'Karl',
+          password: 'hash2',
+          groups: ['groupA', 'groupC'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      const result: UserModel = await controller.getUserById('b');
+
+      expect(result).to.deep.include({
+        username: 'Karl',
+        password: 'hash2',
+        groups: ['groupA', 'groupC'],
+      });
+    });
+
+    it('should throw UserNotFound Error', () => {
+      const controller = new UserController();
+      return expect(controller.getUserById('a')).to.be.rejectedWith(
+        'UserNotFound'
+      );
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'findOne');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(controller.getUserById('a')).to.be.rejectedWith('DBError');
     });
   });
 });
