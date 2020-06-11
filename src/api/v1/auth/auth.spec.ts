@@ -4,12 +4,15 @@ import {expect} from 'chai';
 import {App} from '../../../app';
 import argon2 from 'argon2';
 import {UserController} from '../../../controller/user-controller';
+import {UserModel} from '../../../db/models/user';
 
 const PATH = '/yadu/api/v1/auth';
 
 describe(`${PATH}`, () => {
   let app: App;
   let request: supertest.SuperTest<supertest.Test>;
+
+  let user: UserModel;
 
   let sandbox: sinon.SinonSandbox;
 
@@ -25,9 +28,20 @@ describe(`${PATH}`, () => {
   beforeEach(() => {
     sandbox = sinon.createSandbox();
 
+    user = {
+      username: 'admin',
+      password: 'password',
+      userId: 'abc',
+      groups: [],
+    };
+
     argonVerifyStub = sandbox.stub(argon2, 'verify');
-    getUserByIdStub = sandbox.stub(UserController.prototype, 'getUserById');
-    getUserByNameStub = sandbox.stub(UserController.prototype, 'getUserByName');
+    getUserByIdStub = sandbox
+      .stub(UserController.prototype, 'getUserById')
+      .resolves(user);
+    getUserByNameStub = sandbox
+      .stub(UserController.prototype, 'getUserByName')
+      .resolves(user);
   });
 
   after(done => {
@@ -51,6 +65,8 @@ describe(`${PATH}`, () => {
 
   describe(`GET ${PATH}/login`, () => {
     it('should return false when user is not logged in', done => {
+      argonVerifyStub.resolves(false);
+
       request.get(`${PATH}/login`).end((error, response) => {
         if (error) {
           return done(error);
@@ -100,7 +116,7 @@ describe(`${PATH}`, () => {
           }
 
           const session = response.header['set-cookie'].find((c: string) =>
-            c.startsWith('etid:sess=')
+            c.startsWith('yadu:session=')
           );
 
           expect(response.status).to.equal(204);
@@ -165,5 +181,29 @@ describe(`${PATH}`, () => {
     });
   });
 
-  describe(`POST ${PATH}/logout`, () => {});
+  describe(`POST ${PATH}/logout`, () => {
+    it('should return 204 and logout', done => {
+      argonVerifyStub.resolves(true);
+
+      request
+        .post(`${PATH}/logout`)
+        .send({})
+        .end((error, response) => {
+          if (error) {
+            return done(error);
+          }
+
+          expect(response.status).to.equal(204);
+
+          request.get(`${PATH}/login`).end((innerError, innerResponse) => {
+            if (innerError) {
+              return done(innerError);
+            }
+
+            expect(innerResponse.body.isLoggedIn).to.be.false;
+            done();
+          });
+        });
+    });
+  });
 });

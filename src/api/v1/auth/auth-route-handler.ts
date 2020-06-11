@@ -25,7 +25,7 @@ export class AuthRouteHandler {
   }
 
   static async logout(ctx: ParameterizedContext) {
-    ctx.body = new Error('not implemented');
-    ctx.status = 501;
+    ctx.logout();
+    ctx.status = 204;
   }
 }
