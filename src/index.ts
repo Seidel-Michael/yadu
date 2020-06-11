@@ -9,11 +9,11 @@ mongoose
 
     const userControler = new UserController();
     await User.create({
-      username: 'Test',
+      username: 'Test1',
       password: 'hash',
       groups: [],
     });
     const users = await userControler.getUsers();
-    console.log(users[0].id);
+    console.log(users);
   })
   .catch(error => console.error(error));

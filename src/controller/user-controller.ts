@@ -1,9 +1,9 @@
-import User, {UserModel, UserSchema} from '../db/models/user';
+import User, {UserModel} from '../db/models/user';
 
 export class UserController {
   constructor() {}
 
-  async getUsers(): Promise<UserSchema[]> {
+  async getUsers(): Promise<UserModel[]> {
     try {
       const user = await User.find();
       return user;
@@ -12,7 +12,7 @@ export class UserController {
     }
   }
 
-  async getUserByName(username: string): Promise<UserSchema> {
+  async getUserByName(username: string): Promise<UserModel> {
     let user;
     try {
       user = await User.findOne({username});
@@ -26,7 +26,17 @@ export class UserController {
     return user;
   }
 
-  async getUserById(id: string): Promise<UserSchema> {
-    return Promise.reject(new Error('Not implemented'));
+  async getUserById(userid: string): Promise<UserModel> {
+    let user;
+    try {
+      user = await User.findOne({userid});
+    } catch (error) {
+      throw new Error(`DBError: ${error.message}`);
+    }
+    if (!user) {
+      throw new Error('UserNotFound');
+    }
+
+    return user;
   }
 }

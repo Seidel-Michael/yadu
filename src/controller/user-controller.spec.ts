@@ -126,4 +126,50 @@ describe('UserController', () => {
       );
     });
   });
+
+  describe('getUserById', () => {
+    it('should return correct user', async () => {
+      await (
+        await User.create({
+          userid: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      await (
+        await User.create({
+          userid: 'b',
+          username: 'Karl',
+          password: 'hash2',
+          groups: ['groupA', 'groupC'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      const result: UserModel = await controller.getUserById('b');
+
+      expect(result).to.deep.include({
+        username: 'Karl',
+        password: 'hash2',
+        groups: ['groupA', 'groupC'],
+      });
+    });
+
+    it('should throw UserNotFound Error', () => {
+      const controller = new UserController();
+      return expect(controller.getUserById('a')).to.be.rejectedWith(
+        'UserNotFound'
+      );
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'findOne');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(controller.getUserById('a')).to.be.rejectedWith('DBError');
+    });
+  });
 });

@@ -2,6 +2,7 @@ import mongoose, {Schema, Document} from 'mongoose';
 import shortid from 'shortid';
 
 export interface UserModel {
+  userid?: string;
   username: string;
   password: string | null;
   groups: string[];
@@ -10,7 +11,7 @@ export interface UserModel {
 export interface UserSchema extends Document, UserModel {}
 
 const UserSchema: Schema = new Schema({
-  id: {type: String, unique: true, default: shortid.generate},
+  userid: {type: String, unique: true, default: shortid.generate},
   username: {type: String, required: true, unique: true},
   password: {type: String, required: true},
   groups: {type: [String], required: true},
