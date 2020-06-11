@@ -17,7 +17,6 @@ describe(`${PATH}`, () => {
   let sandbox: sinon.SinonSandbox;
 
   let argonVerifyStub: sinon.SinonStub;
-  let getUserByIdStub: sinon.SinonStub;
   let getUserByNameStub: sinon.SinonStub;
 
   before(() => {
@@ -36,9 +35,7 @@ describe(`${PATH}`, () => {
     };
 
     argonVerifyStub = sandbox.stub(argon2, 'verify');
-    getUserByIdStub = sandbox
-      .stub(UserController.prototype, 'getUserById')
-      .resolves(user);
+    sandbox.stub(UserController.prototype, 'getUserById').resolves(user);
     getUserByNameStub = sandbox
       .stub(UserController.prototype, 'getUserByName')
       .resolves(user);

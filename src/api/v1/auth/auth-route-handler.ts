@@ -7,7 +7,9 @@ export class AuthRouteHandler {
     ctx.body = {isLoggedIn: !!ctx.state.user};
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static async login(ctx: ParameterizedContext, next: () => Promise<any>) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return koaPassport.authenticate('local', async (error: any, user: any) => {
       if (user) {
         await ctx.login(user);

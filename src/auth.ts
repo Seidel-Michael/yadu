@@ -28,7 +28,7 @@ export function auth() {
       async (
         username: string,
         password: string,
-        done: (error?: any, user?: any) => void
+        done: (error?: any, user?: any) => void // eslint-disable-line @typescript-eslint/no-explicit-any
       ) => {
         try {
           const user = await users.getUserByName(username);
