@@ -3,6 +3,8 @@ import chaiAsPromised from 'chai-as-promised';
 import User, {UserModel} from '../db/models/user';
 import {UserController} from './user-controller';
 import * as dbHandler from '../../test-helper/db-handler';
+import sinon from 'sinon';
+import {MongoError} from 'mongodb'; // eslint-disable-line node/no-extraneous-import
 
 chai.use(chaiAsPromised);
 
@@ -23,6 +25,14 @@ describe('UserController', () => {
   after(async () => await dbHandler.closeDatabase());
 
   describe('getUsers', () => {
+    let stub: any = null; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+    afterEach(() => {
+      if (stub !== null) {
+        stub.restore();
+      }
+    });
+
     it('should return all users', async () => {
       await (
         await User.create({
@@ -62,6 +72,14 @@ describe('UserController', () => {
     });
 
     // Mongoose throws MongoError
-    it('should reject with DBError if something went wrong');
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'find');
+      const error = new MongoError('');
+      stub.throws(error);
+
+      const controller = new UserController();
+
+      return expect(controller.getUsers()).to.be.rejectedWith(error);
+    });
   });
 });

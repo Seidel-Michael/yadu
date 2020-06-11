@@ -11,6 +11,7 @@ mongoose
     await User.create({
       username: 'Test',
       password: 'hash',
+      groups: [],
     });
     const users = await userControler.getUsers();
     console.log(users);
