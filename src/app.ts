@@ -6,6 +6,7 @@ import koaLogger from 'koa-logger';
 import koaPassport from 'koa-passport';
 import koaSession from 'koa-session';
 import authRoutes from './api/v1/auth/auth.routes';
+import usersRoutes from './api/v1/users/users.routes';
 import koaStatic from 'koa-static';
 import {auth} from './auth';
 
@@ -35,6 +36,7 @@ export class App {
     this.app.use(koaPassport.session());
 
     this.app.use(authRoutes.routes());
+    this.app.use(usersRoutes.routes());
 
     this.server = this.app
       .listen(PORT)

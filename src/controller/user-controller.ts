@@ -57,10 +57,28 @@ export class UserController {
     try {
       result = await User.updateOne({userId: user.userId}, user);
     } catch (error) {
+      if (error.code === 11000) {
+        throw new Error(`DuplicatedData: ${error.message}`);
+      }
+
       throw new Error(`DBError: ${error.message}`);
     }
     if (result.nModified !== 1) {
       throw new Error('UserNotFound');
+    }
+  }
+
+  async addUser(user: UserModel): Promise<void> {
+    try {
+      await (await User.create(user)).save();
+    } catch (error) {
+      if (error.code === 11000) {
+        throw new Error(`DuplicatedData: ${error.message}`);
+      } else if (error.name === 'ValidationError') {
+        throw new Error(`InvalidData: ${error.message}`);
+      }
+
+      throw new Error(`DBError: ${error.message}`);
     }
   }
 }

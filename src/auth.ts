@@ -32,7 +32,6 @@ export function auth() {
       ) => {
         try {
           const user = await users.getUserByName(username);
-
           const match = await argon2.verify(user.password, password);
 
           if (match) {

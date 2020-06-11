@@ -262,6 +262,36 @@ describe('UserController', () => {
       ).to.be.rejectedWith('UserNotFound');
     });
 
+    it('should throw DuplicatedData Error if user is already inserted', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+
+      await (
+        await User.create({
+          userId: 'b',
+          username: 'Karl',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+
+      const controller = new UserController();
+      return expect(
+        controller.updateUser({
+          userId: 'a',
+          username: 'Karl',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).to.be.rejectedWith('DuplicatedData');
+    });
+
     it('should reject with DBError if something went wrong', () => {
       stub = sinon.stub(User, 'updateOne');
       stub.throws(new MongoError('SomeError'));
@@ -272,6 +302,83 @@ describe('UserController', () => {
         controller.updateUser({
           userId: 'a',
           username: 'Karl',
+          password: 'newPassword',
+          groups: ['groupA', 'groupB'],
+        })
+      ).to.be.rejectedWith('DBError');
+    });
+  });
+
+  describe('addUser', () => {
+    it('should add user', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      const controller = new UserController();
+
+      await controller.addUser({
+        userId: 'b',
+        username: 'Karl',
+        password: 'newPassword',
+        groups: ['groupA', 'groupB'],
+      });
+
+      const result: UserModel[] = await controller.getUsers();
+
+      expect(result.length).to.equal(2);
+      expect(result[1]).to.deep.include({
+        username: 'Karl',
+        password: 'newPassword',
+        groups: ['groupA', 'groupB'],
+      });
+    });
+
+    it('should throw InvalidData Error if data is not a valid user', () => {
+      const controller = new UserController();
+      return expect(
+        controller.addUser(({
+          userId: 'b',
+          password: 'newPassword',
+          groups: ['groupA', 'groupB'],
+        } as unknown) as UserModel)
+      ).to.be.rejectedWith('InvalidData');
+    });
+
+    it('should throw DuplicatedData Error if user is already inserted', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+
+      const controller = new UserController();
+      return expect(
+        controller.addUser({
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).to.be.rejectedWith('DuplicatedData');
+    });
+
+    it('should reject with DBError if something went wrong', () => {
+      stub = sinon.stub(User, 'create');
+      stub.throws(new MongoError('SomeError'));
+
+      const controller = new UserController();
+
+      return expect(
+        controller.addUser({
+          userId: 'b',
+          username: 'Heinz',
           password: 'newPassword',
           groups: ['groupA', 'groupB'],
         })
