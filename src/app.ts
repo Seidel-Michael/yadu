@@ -6,6 +6,8 @@ import koaLogger from 'koa-logger';
 import koaPassport from 'koa-passport';
 import koaSession from 'koa-session';
 import authRoutes from './api/v1/auth/auth.routes';
+import koaStatic from 'koa-static';
+const koaRewrite = require('koa-rewrite');
 import {auth} from './auth';
 
 export class App {
@@ -18,6 +20,10 @@ export class App {
     this.app = new Koa();
     this.app.use(koaBodyParser());
     this.app.use(koaLogger());
+    this.app.use(koaRewrite(/^((?!\/yadu\/api|\.).)*$/gm, '/index.html'))
+    this.app.use(koaStatic('node_modules/yadu-frontend/dist/yadu-frontend'))
+    
+    //this.app.use(koaRewrite('/auth/login', '/index.html'))
 
     this.app.keys = [crypto.randomBytes(32).toString('hex')];
     this.app.use(

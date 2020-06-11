@@ -8,15 +8,17 @@ mongoose
   .then(async () => {
     console.log('Connected');
 
-    const userControler = new UserController();
+    const app = new App();
+
+    /*const userControler = new UserController();
     await User.create({
       username: 'Test1',
       password: 'hash',
       groups: [],
     });
     const users = await userControler.getUsers();
-    console.log(users);
+    console.log(users);*/
   })
   .catch(error => console.error(error));
 
-const app = new App();
+
