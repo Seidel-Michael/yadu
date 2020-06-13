@@ -56,11 +56,13 @@ describe(`${PATH}`, () => {
             username: 'Karl',
             groups: ['groupA', 'groupB'],
           });
+          expect('password' in response.body[0]).to.be.false;
           expect(response.body[1]).to.deep.equal({
             userId: 'b',
             username: 'Heinz',
             groups: ['groupC'],
           });
+          expect('password' in response.body[1]).to.be.false;
 
           done();
         });
@@ -99,6 +101,7 @@ describe(`${PATH}`, () => {
             username: 'Karl',
             groups: ['groupA', 'groupB'],
           });
+          expect('password' in response.body).to.be.false;
 
           done();
         });

@@ -8,10 +8,12 @@ export class UsersRouteHandler {
     try {
       const users = await UsersRouteHandler.userController.getUsers();
       ctx.status = 200;
-      for (const user of users) {
-        delete user.password;
-      }
-      ctx.body = users;
+
+      ctx.body = users.map(u => ({
+        username: u.username,
+        userId: u.userId,
+        groups: u.groups,
+      }));
     } catch (error) {
       if (error.message.startsWith('DBError')) {
         ctx.status = 503;
@@ -29,8 +31,12 @@ export class UsersRouteHandler {
         ctx.params.id
       );
       ctx.status = 200;
-      delete user.password;
-      ctx.body = user;
+
+      ctx.body = {
+        userId: user.userId,
+        username: user.username,
+        groups: user.groups,
+      };
     } catch (error) {
       if (error.message.startsWith('DBError')) {
         ctx.status = 503;
