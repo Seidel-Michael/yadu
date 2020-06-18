@@ -1,10 +1,10 @@
 import chai, {expect} from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import {MongoError} from 'mongodb'; // eslint-disable-line node/no-extraneous-import
+import sinon from 'sinon';
+import * as dbHandler from '../../test-helper/db-handler';
 import User, {UserModel} from '../db/models/user';
 import {UserController} from './user-controller';
-import * as dbHandler from '../../test-helper/db-handler';
-import sinon from 'sinon';
-import {MongoError} from 'mongodb'; // eslint-disable-line node/no-extraneous-import
 
 chai.use(chaiAsPromised);
 
@@ -110,9 +110,7 @@ describe('UserController', () => {
 
     it('should throw UserNotFound Error', () => {
       const controller = new UserController();
-      return expect(controller.getUserByName('Karl')).to.be.rejectedWith(
-        'UserNotFound'
-      );
+      return expect(controller.getUserByName('Karl')).to.be.rejectedWith('UserNotFound');
     });
 
     it('should reject with DBError if something went wrong', () => {
@@ -121,9 +119,7 @@ describe('UserController', () => {
 
       const controller = new UserController();
 
-      return expect(controller.getUserByName('Karl')).to.be.rejectedWith(
-        'DBError'
-      );
+      return expect(controller.getUserByName('Karl')).to.be.rejectedWith('DBError');
     });
   });
 
@@ -158,9 +154,7 @@ describe('UserController', () => {
 
     it('should throw UserNotFound Error', () => {
       const controller = new UserController();
-      return expect(controller.getUserById('a')).to.be.rejectedWith(
-        'UserNotFound'
-      );
+      return expect(controller.getUserById('a')).to.be.rejectedWith('UserNotFound');
     });
 
     it('should reject with DBError if something went wrong', () => {
@@ -206,9 +200,7 @@ describe('UserController', () => {
 
     it('should throw UserNotFound Error', () => {
       const controller = new UserController();
-      return expect(controller.deleteUser('a')).to.be.rejectedWith(
-        'UserNotFound'
-      );
+      return expect(controller.deleteUser('a')).to.be.rejectedWith('UserNotFound');
     });
 
     it('should reject with DBError if something went wrong', () => {
@@ -260,6 +252,26 @@ describe('UserController', () => {
           groups: ['groupA', 'groupB'],
         })
       ).to.be.rejectedWith('UserNotFound');
+    });
+
+    it('should not throw UserNotFound error when user exists but did not get modified', async () => {
+      await (
+        await User.create({
+          userId: 'a',
+          username: 'Heinz',
+          password: 'hash1',
+          groups: ['groupA'],
+        })
+      ).save();
+      const controller = new UserController();
+      return expect(
+        controller.updateUser({
+          userId: 'a',
+          username: 'Karl',
+          password: 'newPassword',
+          groups: ['groupA', 'groupB'],
+        })
+      ).to.be.fulfilled;
     });
 
     it('should throw DuplicatedData Error if user is already inserted', async () => {

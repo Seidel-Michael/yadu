@@ -19,6 +19,7 @@ export class UserController {
     } catch (error) {
       throw new Error(`DBError: ${error.message}`);
     }
+
     if (!user) {
       throw new Error('UserNotFound');
     }
@@ -33,6 +34,7 @@ export class UserController {
     } catch (error) {
       throw new Error(`DBError: ${error.message}`);
     }
+
     if (!user) {
       throw new Error('UserNotFound');
     }
@@ -47,6 +49,7 @@ export class UserController {
     } catch (error) {
       throw new Error(`DBError: ${error.message}`);
     }
+
     if (result.deletedCount !== 1) {
       throw new Error('UserNotFound');
     }
@@ -63,7 +66,8 @@ export class UserController {
 
       throw new Error(`DBError: ${error.message}`);
     }
-    if (result.nModified !== 1) {
+
+    if (result.nModified !== 1 && result.ok !== 1) {
       throw new Error('UserNotFound');
     }
   }
