@@ -1,3 +1,4 @@
+import argon2 from 'argon2';
 import {ParameterizedContext} from 'koa';
 import {UserController} from '../../../controller/user-controller';
 
@@ -27,9 +28,7 @@ export class UsersRouteHandler {
 
   static async getUser(ctx: ParameterizedContext) {
     try {
-      const user = await UsersRouteHandler.userController.getUserById(
-        ctx.params.id
-      );
+      const user = await UsersRouteHandler.userController.getUserById(ctx.params.id);
       ctx.status = 200;
 
       ctx.body = {
@@ -53,6 +52,16 @@ export class UsersRouteHandler {
 
   static async addUser(ctx: ParameterizedContext) {
     try {
+      if (ctx.request.body.password) {
+        if (ctx.request.body.password === '') {
+          ctx.status = 400;
+          ctx.body = 'InvalidData';
+          return;
+        }
+
+        ctx.request.body.password = await argon2.hash(ctx.request.body.password);
+      }
+
       await UsersRouteHandler.userController.addUser(ctx.request.body);
       ctx.status = 204;
     } catch (error) {
@@ -92,6 +101,14 @@ export class UsersRouteHandler {
 
   static async updateUser(ctx: ParameterizedContext) {
     try {
+      if (ctx.request.body.password) {
+        if (ctx.request.body.password !== '') {
+          ctx.request.body.password = await argon2.hash(ctx.request.body.password);
+        } else {
+          delete ctx.request.body.password;
+        }
+      }
+
       await UsersRouteHandler.userController.updateUser({
         ...ctx.request.body,
         userId: ctx.params.id,
@@ -119,9 +136,7 @@ export class UsersRouteHandler {
 
   static async getCurrentUser(ctx: ParameterizedContext) {
     try {
-      const user = await UsersRouteHandler.userController.getUserById(
-        ctx.state.user.userId
-      );
+      const user = await UsersRouteHandler.userController.getUserById(ctx.state.user.userId);
       ctx.status = 200;
       delete user.password;
       ctx.body = user;

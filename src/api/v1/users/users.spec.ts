@@ -1,12 +1,11 @@
+import argon2 from 'argon2';
+import {expect} from 'chai';
 import sinon from 'sinon';
 import supertest from 'supertest';
-import {expect} from 'chai';
 import {App} from '../../../app';
 import {UserController} from '../../../controller/user-controller';
-import {UsersRouteHandler} from './users-route-handler';
 import {UserModel} from '../../../db/models/user';
-import argon2 from 'argon2';
-import {before} from 'mocha';
+import {UsersRouteHandler} from './users-route-handler';
 
 const PATH = '/yadu/api/v1/users';
 
@@ -69,9 +68,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.getUsers.rejects(
-        new Error('DBError: Something went wrong!')
-      );
+      userController.getUsers.rejects(new Error('DBError: Something went wrong!'));
 
       request.get(`${PATH}/`).expect(503, done);
     });
@@ -108,17 +105,13 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.getUserById.rejects(
-        new Error('DBError: Something went wrong!')
-      );
+      userController.getUserById.rejects(new Error('DBError: Something went wrong!'));
 
       request.get(`${PATH}/abc`).expect(503, done);
     });
 
     it('should return 404 if UserController throws UserNotFound', done => {
-      userController.getUserById.rejects(
-        new Error('UserNotFound: Something went wrong!')
-      );
+      userController.getUserById.rejects(new Error('UserNotFound: Something went wrong!'));
 
       request.get(`${PATH}/abc`).expect(404, done);
     });
@@ -131,6 +124,17 @@ describe(`${PATH}`, () => {
   });
 
   describe(`POST ${PATH}/`, () => {
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      sandbox.stub(argon2, 'hash').withArgs('abc').resolves('SomeHashOfAbc');
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it('should add user', done => {
       userController.addUser.resolves();
 
@@ -146,16 +150,17 @@ describe(`${PATH}`, () => {
         .expect(204)
         .end(() => {
           expect(userController.addUser.callCount).to.equal(1);
-          expect(userController.addUser.firstCall.args[0]).to.deep.equal(user);
+          expect(userController.addUser.firstCall.args[0]).to.deep.equal({
+            ...user,
+            password: 'SomeHashOfAbc',
+          });
 
           done();
         });
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.addUser.rejects(
-        new Error('DBError: Something went wrong!')
-      );
+      userController.addUser.rejects(new Error('DBError: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -166,10 +171,20 @@ describe(`${PATH}`, () => {
       request.post(`${PATH}/`).send(user).expect(503, done);
     });
 
+    it('should return 400 when password is an empty string', done => {
+      userController.addUser.resolves();
+
+      const user: UserModel = {
+        username: 'Karl',
+        password: '',
+        groups: ['groupA'],
+      };
+
+      request.post(`${PATH}/`).send(user).expect(400, done);
+    });
+
     it('should return 400 if UserController throws InvalidData', done => {
-      userController.addUser.rejects(
-        new Error('InvalidData: Something went wrong!')
-      );
+      userController.addUser.rejects(new Error('InvalidData: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -181,9 +196,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 409 if UserController throws DuplicatedData', done => {
-      userController.addUser.rejects(
-        new Error('DuplicatedData: Something went wrong!')
-      );
+      userController.addUser.rejects(new Error('DuplicatedData: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -223,17 +236,13 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.deleteUser.rejects(
-        new Error('DBError: Something went wrong!')
-      );
+      userController.deleteUser.rejects(new Error('DBError: Something went wrong!'));
 
       request.delete(`${PATH}/abc`).expect(503, done);
     });
 
     it('should return 404 if UserController throws UserNotFound', done => {
-      userController.deleteUser.rejects(
-        new Error('UserNotFound: Something went wrong!')
-      );
+      userController.deleteUser.rejects(new Error('UserNotFound: Something went wrong!'));
 
       request.delete(`${PATH}/abc`).expect(404, done);
     });
@@ -246,12 +255,71 @@ describe(`${PATH}`, () => {
   });
 
   describe(`PUT ${PATH}/`, () => {
+    let sandbox: sinon.SinonSandbox;
+
+    beforeEach(() => {
+      sandbox = sinon.createSandbox();
+      sandbox.stub(argon2, 'hash').withArgs('abc').resolves('SomeHashOfAbc');
+    });
+
+    afterEach(() => {
+      sandbox.restore();
+    });
+
     it('should update user', done => {
       userController.updateUser.resolves();
 
       const user: UserModel = {
         username: 'Karl',
         password: 'abc',
+        groups: ['groupA'],
+      };
+
+      request
+        .put(`${PATH}/a`)
+        .send(user)
+        .expect(204)
+        .end(() => {
+          expect(userController.updateUser.callCount).to.equal(1);
+          expect(userController.updateUser.firstCall.args[0]).to.deep.equal({
+            ...user,
+            userId: 'a',
+            password: 'SomeHashOfAbc',
+          });
+
+          done();
+        });
+    });
+
+    it('should update user without password when password not in body', done => {
+      userController.updateUser.resolves();
+
+      const user = {
+        username: 'Karl',
+        groups: ['groupA'],
+      };
+
+      request
+        .put(`${PATH}/a`)
+        .send(user)
+        .expect(204)
+        .end(() => {
+          expect(userController.updateUser.callCount).to.equal(1);
+          expect(userController.updateUser.firstCall.args[0]).to.deep.equal({
+            ...user,
+            userId: 'a',
+          });
+
+          done();
+        });
+    });
+
+    it('should update user without password when password is an empty string', done => {
+      userController.updateUser.resolves();
+
+      const user = {
+        username: 'Karl',
+        password: '',
         groups: ['groupA'],
       };
 
@@ -271,9 +339,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.updateUser.rejects(
-        new Error('DBError: Something went wrong!')
-      );
+      userController.updateUser.rejects(new Error('DBError: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -285,9 +351,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 400 if UserController throws InvalidData', done => {
-      userController.updateUser.rejects(
-        new Error('InvalidData: Something went wrong!')
-      );
+      userController.updateUser.rejects(new Error('InvalidData: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -299,9 +363,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 409 if UserController throws DuplicatedData', done => {
-      userController.updateUser.rejects(
-        new Error('DuplicatedData: Something went wrong!')
-      );
+      userController.updateUser.rejects(new Error('DuplicatedData: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -313,9 +375,7 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 404 if UserController throws UserNotFound', done => {
-      userController.updateUser.rejects(
-        new Error('UserNotFound: Something went wrong!')
-      );
+      userController.updateUser.rejects(new Error('UserNotFound: Something went wrong!'));
 
       const user: UserModel = {
         username: 'Karl',
@@ -403,25 +463,19 @@ describe(`${PATH}`, () => {
     });
 
     it('should return 503 if UserController throws DBError', done => {
-      userController.getUserById
-        .withArgs('a')
-        .rejects(new Error('DBError: Something went wrong!'));
+      userController.getUserById.withArgs('a').rejects(new Error('DBError: Something went wrong!'));
 
       request.get(`${PATH}/me`).expect(503, done);
     });
 
     it('should return 404 if UserController throws UserNotFoundError', done => {
-      userController.getUserById
-        .withArgs('a')
-        .rejects(new Error('UserNotFound: Something went wrong!'));
+      userController.getUserById.withArgs('a').rejects(new Error('UserNotFound: Something went wrong!'));
 
       request.get(`${PATH}/me`).expect(404, done);
     });
 
     it('should return 500 if UserController throws some Error', done => {
-      userController.getUserById
-        .withArgs('a')
-        .rejects(new Error('Some Error!'));
+      userController.getUserById.withArgs('a').rejects(new Error('Some Error!'));
 
       request.get(`${PATH}/me`).expect(500, done);
     });
